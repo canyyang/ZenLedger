@@ -1,0 +1,14 @@
+
+.content {
+	width: 100vw;
+	height: 100vh;
+	font-family: Helvetica Neue,Helvetica,Roboto,Segoe UI,Arial,sans-serif;
+}
+/* 去除scroll滚动条 */
+::-webkit-scrollbar {
+	display: none;
+	width: 0;
+	height: 0;
+	background-color: transparent;
+}
+page{--status-bar-height:25px;--top-window-height:0px;--window-top:0px;--window-bottom:0px;--window-left:0px;--window-right:0px;--window-magin:0px}[data-c-h="true"]{display: none !important;}

@@ -202,6 +202,9 @@
 .middle-item.data-v-c7009475 {
 		margin-bottom: 1vw;
 }
+.detail-list.data-v-c7009475 {
+		padding-bottom: 1vh;
+}
 .detail-list-title.data-v-c7009475 {
 		margin: 2vh 0;
 		width: 100vw;

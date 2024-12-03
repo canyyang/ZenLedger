@@ -448,6 +448,9 @@
 	.middle-item {
 		margin-bottom: 1vw;
 	}
+	.detail-list {
+		padding-bottom: 1vh;
+	}
 	.detail-list-title {
 		margin: 2vh 0;
 		width: 100vw;

@@ -1,6 +1,15 @@
 <template>
 	<view class="content">
 		<view class="gray-box" @click="closeView()" v-if="grayVisible"></view>
+		<view class="detail-box" v-if="detailVisible">
+			<view class="detail-title">{{typeTitle[currentItem.pay_type][currentItem.num_type]}}</view>
+			<view class="detail-money"><span style="font-size: 5vw;">￥</span>{{currentItem.pay_num}}</view>
+			<view class="detail-time">{{new Date(currentItem.time).getFullYear()}} / {{new Date(currentItem.time).getMonth() + 1}} / {{new Date(currentItem.time).getDate()}}</view>
+			<view class="detail-time">{{filterNum(new Date(currentItem.time).getHours())}}:{{filterNum(new Date(currentItem.time).getMinutes())}}</view>
+			<view class="detail-remark" v-if="currentItem.remark != ''">{{currentItem.remark}}</view>
+			<view class="detail-line"></view>
+			<view class="detail-edit" @click="toEditPath(choosedTime)"><image src="../../static/icons/edit.svg" style="width: 7vw; height: 7vw;" /></view>
+		</view>
 		<view class="delete-box" v-if="deleteVisible">
 			<view class="delete-title">提示</view>
 			<view>确认删除该交易记录？</view>
@@ -68,12 +77,12 @@
 							<span>{{dayArr.sum.toFixed(2)}}</span>
 						</view>
 					</view>
-					<view class="list-item" @longpress="chooseItem(day.time)" v-for="(day, i) in dayArr.detail" :key="day.time">
+					<view class="list-item" @click="showItem(day.time)" @longpress="chooseItem(day.time)" v-for="(day, i) in dayArr.detail" :key="day.time">
 						<view class="item-left">
 							<view class="item-box" :style="{ backgroundColor: bgColor[day.pay_type][day.num_type] }" >
 								<image class="item-logo" style="width: 1.25em; height: 1.25em;" :src="iconSrc[day.pay_type][day.num_type]" />
 							</view>
-							<span>{{typeTitle[day.pay_type][day.num_type]}}</span>
+							<span>{{day.num_type == 7 ? (day.remark || typeTitle[day.pay_type][day.num_type]) : typeTitle[day.pay_type][day.num_type]}}</span>
 						</view>
 						<view class="item-right">
 							<image class="logo" style="width: 0.7em; height: 0.7em;" :src="'/static/icons/money' + day.pay_type + '.svg'" />
@@ -90,6 +99,9 @@
 <script setup>
 	import { computed, onMounted, reactive, ref, watch } from 'vue';
 	import { useStore } from 'vuex';
+	import { filterNum } from '../../utils/tool.js';
+	
+	
 	const store = useStore();
 	const iconSrc = store.state.iconSrc;
 	const bgColor = store.state.bgColor;
@@ -101,9 +113,10 @@
 	
 	const visible = ref(false);
 	const grayVisible = ref(false);
+	const detailVisible = ref(false)
 	const deleteVisible = ref(false);
 	const showView = () => {visible.value = true; grayVisible.value = true;};
-	const closeView = () => {grayVisible.value = false; visible.value = false; deleteVisible.value = false;};
+	const closeView = () => {grayVisible.value = false; visible.value = false; detailVisible.value = false; deleteVisible.value = false;};
 	
 	const scrollTopVal = ref(0);
 	const years = [2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026, 2027, 2028, 2029];
@@ -148,22 +161,26 @@
 		}, [])
 	})
 	
+	
 	const inputSum = computed(() => store.getters.getSum(year.value, month.value, 1));
 	const outputSum = computed(() => store.getters.getSum(year.value, month.value, 0));
 	
 	const choosedTime = ref(0); 
+	const showItem = (time) => {choosedTime.value = time; detailVisible.value = true; grayVisible.value = true;}
 	const chooseItem = (time) => {choosedTime.value = time; deleteVisible.value = true; grayVisible.value = true;} 
 	const deleteItem = () => {
 		store.commit('deleteData', choosedTime.value)
 		uni.setStorage({
 			key: 'book',
-			data: JSON.stringify(store.state.bookData),
-			success: () => {
-				console.log('删除成功')
-			}
+			data: JSON.stringify(store.state.bookData)
 		})
 		closeView();
 		}
+		
+	const currentItem = computed(() => {
+		console.log(store.state.bookData.find(item => item.time === choosedTime.value))
+		return store.state.bookData.find(item => item.time === choosedTime.value)
+	})
 	
 	onMounted(() => {
 		let screenWidth;
@@ -180,6 +197,9 @@
 		scrollTopVal.value = (13 * (currentYear.value - 2)) * (screenWidth / 100);
 	})
 	
+	const toEditPath = () => {
+		uni.navigateTo({url: `/pages/add/add?time=${choosedTime.value}`});
+	}
 	
 	const toAddPath = () => {
 		uni.navigateTo({url: '/pages/add/add'});
@@ -226,6 +246,57 @@
 	.delete-footer-item {
 		margin-left: 4vw;
 		color: #617d8b;
+	}
+	.detail-box {
+		box-sizing: border-box;
+		z-index: 3;
+		position: fixed;
+		left: 10vw;
+		top: 30vh;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		width: 80vw;
+		background-color: #fbfbfb;
+		border-radius: 2vw;
+	}
+	.detail-title {
+		margin-top: 7vw;
+		color: #b1b1b1;
+		font-size: 5vw;
+	}
+	.detail-money {
+		margin-top: 4vw;
+		margin-bottom: 4vw;
+		display: flex;
+		align-items: baseline;
+		font-size: 8vw;
+		font-weight: bold;
+	}
+	.detail-time {
+		margin-top: 1vw;
+		color: #b0b0b0;
+		font-size: 3.3vw;
+	}
+	.detail-remark {
+		margin-top: 4vw;
+		color: #b1b1b1;
+		font-size: 4vw;
+	}
+	.detail-line {
+		margin-top: 6vw;
+		margin-bottom: 2vw;
+		width: 60vw;
+		height: 1px;
+		background-color: #ededed;
+	}
+	.detail-edit {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		width: 60vw;
+		height: 9vw;
+		margin-bottom: 2vw;
 	}
 	.visible-view {
 		z-index: 3;
@@ -430,7 +501,7 @@
 		width: 90vw;
 		margin-top: 0.4vh;
 		height: 6.8vh;
-		border: 1px solid #e6e6e6;
+		border: 0.8px solid #e7e7e7;
 		border-radius: 1vh;
 		color: #282323;
 		font-size: 2vh;

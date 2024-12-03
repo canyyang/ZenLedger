@@ -1,6 +1,7 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
 const common_assets = require("../../common/assets.js");
+const utils_tool = require("../../utils/tool.js");
 const _sfc_main = {
   __name: "index",
   setup(__props) {
@@ -13,6 +14,7 @@ const _sfc_main = {
     const month = common_vendor.ref(1);
     const visible = common_vendor.ref(false);
     const grayVisible = common_vendor.ref(false);
+    const detailVisible = common_vendor.ref(false);
     const deleteVisible = common_vendor.ref(false);
     const showView = () => {
       visible.value = true;
@@ -21,6 +23,7 @@ const _sfc_main = {
     const closeView = () => {
       grayVisible.value = false;
       visible.value = false;
+      detailVisible.value = false;
       deleteVisible.value = false;
     };
     const scrollTopVal = common_vendor.ref(0);
@@ -76,6 +79,11 @@ const _sfc_main = {
     const inputSum = common_vendor.computed(() => store.getters.getSum(year.value, month.value, 1));
     const outputSum = common_vendor.computed(() => store.getters.getSum(year.value, month.value, 0));
     const choosedTime = common_vendor.ref(0);
+    const showItem = (time) => {
+      choosedTime.value = time;
+      detailVisible.value = true;
+      grayVisible.value = true;
+    };
     const chooseItem = (time) => {
       choosedTime.value = time;
       deleteVisible.value = true;
@@ -85,13 +93,14 @@ const _sfc_main = {
       store.commit("deleteData", choosedTime.value);
       common_vendor.index.setStorage({
         key: "book",
-        data: JSON.stringify(store.state.bookData),
-        success: () => {
-          console.log("删除成功");
-        }
+        data: JSON.stringify(store.state.bookData)
       });
       closeView();
     };
+    const currentItem = common_vendor.computed(() => {
+      console.log(store.state.bookData.find((item) => item.time === choosedTime.value));
+      return store.state.bookData.find((item) => item.time === choosedTime.value);
+    });
     common_vendor.onMounted(() => {
       let screenWidth;
       common_vendor.index.getSystemInfo({
@@ -106,6 +115,9 @@ const _sfc_main = {
       currentMonth.value = nowDate.getMonth() + 1;
       scrollTopVal.value = 13 * (currentYear.value - 2) * (screenWidth / 100);
     });
+    const toEditPath = () => {
+      common_vendor.index.navigateTo({ url: `/pages/add/add?time=${choosedTime.value}` });
+    };
     const toAddPath = () => {
       common_vendor.index.navigateTo({ url: "/pages/add/add" });
     };
@@ -118,22 +130,38 @@ const _sfc_main = {
       }, grayVisible.value ? {
         b: common_vendor.o(($event) => closeView())
       } : {}, {
-        c: deleteVisible.value
-      }, deleteVisible.value ? {
-        d: common_vendor.o(($event) => closeView()),
-        e: common_vendor.o(($event) => deleteItem())
+        c: detailVisible.value
+      }, detailVisible.value ? common_vendor.e({
+        d: common_vendor.t(common_vendor.unref(typeTitle)[currentItem.value.pay_type][currentItem.value.num_type]),
+        e: common_vendor.t(currentItem.value.pay_num),
+        f: common_vendor.t(new Date(currentItem.value.time).getFullYear()),
+        g: common_vendor.t(new Date(currentItem.value.time).getMonth() + 1),
+        h: common_vendor.t(new Date(currentItem.value.time).getDate()),
+        i: common_vendor.t(common_vendor.unref(utils_tool.filterNum)(new Date(currentItem.value.time).getHours())),
+        j: common_vendor.t(common_vendor.unref(utils_tool.filterNum)(new Date(currentItem.value.time).getMinutes())),
+        k: currentItem.value.remark != ""
+      }, currentItem.value.remark != "" ? {
+        l: common_vendor.t(currentItem.value.remark)
       } : {}, {
-        f: visible.value
+        m: common_assets._imports_0,
+        n: common_vendor.o(($event) => toEditPath(choosedTime.value))
+      }) : {}, {
+        o: deleteVisible.value
+      }, deleteVisible.value ? {
+        p: common_vendor.o(($event) => closeView()),
+        q: common_vendor.o(($event) => deleteItem())
+      } : {}, {
+        r: visible.value
       }, visible.value ? common_vendor.e({
-        g: common_vendor.t(years[currentYear.value]),
-        h: common_vendor.o(($event) => setIsYear(true)),
-        i: isYear.value ? 1 : "",
-        j: common_vendor.t(currentMonth.value),
-        k: common_vendor.o(($event) => setIsYear(false)),
-        l: !isYear.value ? 1 : "",
-        m: isYear.value
+        s: common_vendor.t(years[currentYear.value]),
+        t: common_vendor.o(($event) => setIsYear(true)),
+        v: isYear.value ? 1 : "",
+        w: common_vendor.t(currentMonth.value),
+        x: common_vendor.o(($event) => setIsYear(false)),
+        y: !isYear.value ? 1 : "",
+        z: isYear.value
       }, isYear.value ? {
-        n: common_vendor.f(years, (year2, index, i0) => {
+        A: common_vendor.f(years, (year2, index, i0) => {
           return {
             a: common_vendor.t(year2),
             b: index,
@@ -141,9 +169,9 @@ const _sfc_main = {
             d: currentYear.value == index ? 1 : ""
           };
         }),
-        o: scrollTopVal.value
+        B: scrollTopVal.value
       } : {
-        p: common_vendor.f(months, (month2, index, i0) => {
+        C: common_vendor.f(months, (month2, index, i0) => {
           return {
             a: common_vendor.t(month2),
             b: index,
@@ -152,23 +180,23 @@ const _sfc_main = {
           };
         })
       }, {
-        q: common_vendor.o(($event) => closeView()),
-        r: common_vendor.o(($event) => enter())
+        D: common_vendor.o(($event) => closeView()),
+        E: common_vendor.o(($event) => enter())
       }) : {}, {
-        s: common_vendor.t(year.value),
-        t: common_vendor.t(month.value),
-        v: common_vendor.o(($event) => showView()),
-        w: common_assets._imports_1,
-        x: common_vendor.t(inputSum.value),
-        y: isInput.value ? 1 : "",
-        z: common_vendor.o(($event) => setInput(true)),
-        A: common_vendor.o(($event) => [setInput(false), toFigPath(1)]),
-        B: common_assets._imports_1,
-        C: common_vendor.t(outputSum.value),
-        D: isOutput.value ? 1 : "",
-        E: common_vendor.o(($event) => setOutput(true)),
-        F: common_vendor.o(($event) => [setOutput(false), toFigPath(0)]),
-        G: common_vendor.f(monthData.value, (dayArr, index, i0) => {
+        F: common_vendor.t(year.value),
+        G: common_vendor.t(month.value),
+        H: common_vendor.o(($event) => showView()),
+        I: common_assets._imports_1,
+        J: common_vendor.t(inputSum.value),
+        K: isInput.value ? 1 : "",
+        L: common_vendor.o(($event) => setInput(true)),
+        M: common_vendor.o(($event) => [setInput(false), toFigPath(1)]),
+        N: common_assets._imports_1,
+        O: common_vendor.t(outputSum.value),
+        P: isOutput.value ? 1 : "",
+        Q: common_vendor.o(($event) => setOutput(true)),
+        R: common_vendor.o(($event) => [setOutput(false), toFigPath(0)]),
+        S: common_vendor.f(monthData.value, (dayArr, index, i0) => {
           return {
             a: common_vendor.t(dayArr.day),
             b: common_vendor.t(dayArr.weekday),
@@ -177,20 +205,21 @@ const _sfc_main = {
               return {
                 a: common_vendor.unref(iconSrc)[day.pay_type][day.num_type],
                 b: common_vendor.unref(bgColor)[day.pay_type][day.num_type],
-                c: common_vendor.t(common_vendor.unref(typeTitle)[day.pay_type][day.num_type]),
+                c: common_vendor.t(day.num_type == 7 ? day.remark || common_vendor.unref(typeTitle)[day.pay_type][day.num_type] : common_vendor.unref(typeTitle)[day.pay_type][day.num_type]),
                 d: "/static/icons/money" + day.pay_type + ".svg",
                 e: common_vendor.t(day.pay_num),
                 f: day.pay_type == 1 ? 1 : "",
-                g: common_vendor.o(($event) => chooseItem(day.time), day.time),
-                h: day.time
+                g: common_vendor.o(($event) => showItem(day.time), day.time),
+                h: common_vendor.o(($event) => chooseItem(day.time), day.time),
+                i: day.time
               };
             }),
             e: index
           };
         }),
-        H: common_vendor.t(month.value),
-        I: common_assets._imports_1,
-        J: common_vendor.o(($event) => toAddPath())
+        T: common_vendor.t(month.value),
+        U: common_assets._imports_1,
+        V: common_vendor.o(($event) => toAddPath())
       });
     };
   }

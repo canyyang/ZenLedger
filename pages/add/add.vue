@@ -100,7 +100,7 @@
 		}}
 	const closeView = () => {grayVisible.value = false; visible.value = false;}
 	
-	const isMonth = ref(true)
+	const isMonth = ref(false)
 	const setIsMonth = (val) => {isMonth.value = val;}
 	const currentMonth = ref(0)
 	const currentDay = ref(0)

@@ -22,7 +22,7 @@ const _sfc_main = {
       grayVisible.value = false;
       visible.value = false;
     };
-    const isMonth = common_vendor.ref(true);
+    const isMonth = common_vendor.ref(false);
     const setIsMonth = (val) => {
       isMonth.value = val;
     };
